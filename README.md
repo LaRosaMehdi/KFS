@@ -60,7 +60,9 @@ The **Build and test** job:
 
 `make test` runs `scripts/check_boot.py`. It builds the ISO, boots QEMU with
 `-display none` (direct `-kernel` boot, then the ISO through the GRUB menu),
-reads the VGA buffer at `0xB8000`, and fails if **42** is not on screen.
+reads the VGA buffer at `0xB8000`. The mandatory test fails unless **42**,
+**GDT** and **kernel stack** are on screen. The bonus test fails unless
+**42** and **kfs>** are on screen.
 `make run` stays the graphical QEMU session.
 
 ## Files

@@ -67,18 +67,26 @@ def dump_vga(sock):
     return chars.decode("latin1")
 
 
-def wait_vga(proc, sock, needle, seconds, label):
+def missing(text, needles):
+    absent = []
+    for needle in needles:
+        if needle not in text:
+            absent.append(needle)
+    return absent
+
+
+def wait_vga(proc, sock, needles, seconds, label):
     deadline = time.time() + seconds
     last = ""
     while time.time() < deadline:
         if proc.poll() is not None:
             die("QEMU s'est arrete pendant %s (code %s)" % (label, proc.returncode))
         last = dump_vga(sock)
-        if needle in last:
+        if not missing(last, needles):
             return last
         time.sleep(0.2)
-    die("%s: pas %r dans l'ecran QEMU apres %ss\n--- ecran ---\n%s"
-        % (label, needle, seconds, preview(last)))
+    die("%s: pas %s dans l'ecran QEMU apres %ss\n--- ecran ---\n%s"
+        % (label, missing(last, needles), seconds, preview(last, 16)))
 
 
 def boot_and_check(qemu, extra_args, expect, via_grub):
@@ -116,7 +124,7 @@ def boot_and_check(qemu, extra_args, expect, via_grub):
         qmp_read(sock)
         qmp(sock, {"execute": "qmp_capabilities"})
         if via_grub:
-            wait_vga(proc, sock, "GRUB", 20, "boot GRUB")
+            wait_vga(proc, sock, ["GRUB"], 20, "boot GRUB")
             qmp_hmp(sock, "sendkey ret")
         wait_vga(proc, sock, expect, 20, "boot KFS")
         qmp(sock, {"execute": "quit"})
@@ -137,8 +145,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--bin", required=True)
     ap.add_argument("--iso", required=True)
-    ap.add_argument("--expect", default="42")
+    ap.add_argument("--expect", action="append", dest="expects")
     args = ap.parse_args()
+    if not args.expects:
+        args.expects = ["42"]
 
     qemu = shutil.which("qemu-system-i386") or shutil.which("qemu-system-x86_64")
     if not qemu:
@@ -156,17 +166,17 @@ def main():
         print("ok: Multiboot")
 
     print("test: QEMU -kernel (KFS sans menu)")
-    boot_and_check(qemu, ["-kernel", os.path.abspath(args.bin)], args.expect, False)
-    print("ok: ecran QEMU contient %r" % args.expect)
+    boot_and_check(qemu, ["-kernel", os.path.abspath(args.bin)], args.expects, False)
+    print("ok: ecran QEMU contient %s" % args.expects)
 
     print("test: QEMU -cdrom (GRUB puis KFS, comme make run)")
     boot_and_check(
         qemu,
         ["-boot", "d", "-cdrom", os.path.abspath(args.iso)],
-        args.expect,
+        args.expects,
         True,
     )
-    print("ok: GRUB + ecran QEMU contient %r" % args.expect)
+    print("ok: GRUB + ecran QEMU contient %s" % args.expects)
     print("tous les tests OK")
 
 

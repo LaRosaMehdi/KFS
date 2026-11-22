@@ -16,6 +16,7 @@ void    main(uint32_t magic, void *mb_info)
     if (strcmp("42", "42") == 0)
         vga_write("42");
     gdt_init();
+    gdt_print();
     print_k_stack();
     /* Nothing else to do: sleep until the next interrupt. */
     for (;;)

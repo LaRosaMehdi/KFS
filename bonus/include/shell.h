@@ -3,7 +3,7 @@
 
 /*
 ** Minimal shell: each console has its own input line, run on Enter.
-** Commands: help, stack, gdt, clear, halt, reboot, panic.
+** Commands: help, stack, gdt, regs, clear, halt, reboot, panic.
 */
 
 /* Prints the prompt on the active console. */

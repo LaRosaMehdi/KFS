@@ -9,6 +9,7 @@
 #include "io.h"
 #include "klib.h"
 #include "printk.h"
+#include "regs.h"
 #include "tty.h"
 
 # define SHELL_PROMPT       "kfs> "
@@ -76,6 +77,7 @@ static const struct shell_command g_commands[] = {
     {"help", "list the commands", command_help},
     {"stack", "dump the kernel stack", print_k_stack},
     {"gdt", "print the GDT entries", gdt_print},
+    {"regs", "print cs, ds, ss, esp, ebp", regs_print},
     {"clear", "clear this console and its history", tty_clear},
     {"halt", "stop the CPU", command_halt},
     {"reboot", "restart the machine", command_reboot},

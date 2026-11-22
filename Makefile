@@ -103,8 +103,14 @@ endif
 run: iso
 	qemu-system-i386 -boot d -cdrom $(ISO)
 
+ifdef BONUS
+EXPECT	= --expect 42 --expect "kfs>"
+else
+EXPECT	= --expect 42 --expect GDT --expect "kernel stack"
+endif
+
 test: iso
-	python3 scripts/check_boot.py --bin $(NAME) --iso $(ISO)
+	python3 scripts/check_boot.py --bin $(NAME) --iso $(ISO) $(EXPECT)
 
 clean:
 	rm -rf build

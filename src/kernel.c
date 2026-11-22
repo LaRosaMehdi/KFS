@@ -6,6 +6,7 @@
 #include "types.h"
 #include "vga.h"
 #include "klib.h"
+#include "gdt.h"
 
 void    main(uint32_t magic, void *mb_info)
 {
@@ -14,6 +15,9 @@ void    main(uint32_t magic, void *mb_info)
     vga_init();
     if (strcmp("42", "42") == 0)
         vga_write("42");
+    gdt_init();
+    gdt_print();
+    print_k_stack();
     /* Nothing else to do: sleep until the next interrupt. */
     for (;;)
         __asm__ volatile ("hlt");
